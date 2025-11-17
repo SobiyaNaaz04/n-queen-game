@@ -1,110 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>N-Queen Visualizer</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<title>N-Queens Interactive App</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-    padding: 30px;
-  }
-  .container {
-    max-width: 400px;
-    margin: auto;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 3px 16px #8884;
-    padding: 24px;
-    text-align: center;
+    background: #eef2f3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    min-height: 100vh;
   }
   h1 {
-    font-size: 2rem;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
+    color: #446;
   }
-  .board {
+  #app-container {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    max-width: 100%;
+    width: 370px;
+  }
+  label {
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  input[type="number"] {
+    width: 60px;
+    font-size: 16px;
+    padding: 5px;
+    text-align: center;
+    border: 2px solid #667;
+    border-radius: 8px;
+    margin-left: 10px;
+  }
+  button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 11px;
+    font-weight: bold;
+    font-size: 18px;
+    background: #3a5fcd;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #2b4ebc;
+  }
+  button:disabled {
+    background: #7b8dbf;
+    cursor: not-allowed;
+  }
+  #board {
+    margin-top: 20px;
     display: grid;
-    margin: 20px 0;
-    gap: 0;
+    gap: 2px;
     user-select: none;
   }
   .cell {
-    width: 36px;
-    height: 36px;
-    border: 1px solid #aaa;
+    aspect-ratio: 1 / 1;
+    background-color: #f6f8fa;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7rem;
+    font-size: 28px;
+    cursor: default;
   }
   .cell.dark {
-    background: #5e7ca3;
-    color: #fff;
-  }
-  .cell.light {
-    background: #ddedff;
+    background-color: #6178a1;
+    color: white;
   }
   .queen {
-    color: #e63946;
+    color: #e33e2b;
   }
-  input[type='number'] {
-    width: 60px;
-    font-size: 1rem;
-    padding: 3px;
-    margin-left: 8px;
+  #status {
+    margin-top: 18px;
+    font-weight: 600;
     text-align: center;
+    font-size: 18px;
   }
-  button {
-    background: #367ace;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 12px;
-    font-size: 1rem;
-    transition: background 0.3s ease;
-  }
-  button:active {
-    background: #2a5694;
-  }
-  @media (max-width: 600px) {
-    .container {
-      padding: 12px;
+  @media (max-width: 400px) {
+    #app-container {
+      width: 95vw;
     }
     .cell {
-      width: 26px;
-      height: 26px;
-      font-size: 1.3rem;
-    }
-    input[type='number'] {
-      width: 40px;
+      font-size: 22px;
     }
   }
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>N-Queen Visualizer</h1>
-  <label for="nValue">Enter N:</label>
-  <input type="number" id="nValue" value="8" min="4" max="12" />
-  <button onclick="solveNQueens()">Solve</button>
-  <div id="board" class="board"></div>
+<h1>N-Queens Interactive App</h1>
+<div id="app-container">
+  <label for="nInput">Enter Board Size (N):</label><input id="nInput" type="number" value="8" min="4" max="12"/>
+  <button id="solveBtn">Solve</button>
+  <div id="board"></div>
   <div id="status"></div>
 </div>
+
 <script>
-  function createBoard(n, queens = []) {
-    const board = document.getElementById('board');
-    board.innerHTML = '';
-    board.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
-    for (let row = 0; row < n; row++) {
-      for (let col = 0; col < n; col++) {
+  const boardEl = document.getElementById('board');
+  const statusEl = document.getElementById('status');
+  const solveBtn = document.getElementById('solveBtn');
+  const nInput = document.getElementById('nInput');
+
+  function createBoard(n, queens=[]) {
+    boardEl.style.gridTemplateColumns = repeat(${n}, 1fr);
+    boardEl.innerHTML = '';
+    for(let r=0; r<n; r++) {
+      for(let c=0; c<n; c++) {
         const cell = document.createElement('div');
-        cell.className = 'cell ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
-        if (queens[row] === col) cell.innerHTML = '<span class="queen">&#9819;</span>';
-        board.appendChild(cell);
+        cell.classList.add('cell');
+        if((r+c) % 2 === 1) cell.classList.add('dark');
+        if(queens[r] === c) cell.innerHTML = '<span class="queen">&#9819;</span>';
+        boardEl.appendChild(cell);
       }
     }
   }
@@ -114,54 +134,57 @@
   }
 
   async function solveNQueens() {
-    const n = parseInt(document.getElementById('nValue').value);
+    let n = parseInt(nInput.value);
     if (n < 4 || n > 12) {
-      alert('Please enter N between 4 and 12.');
+      alert("Please enter a value between 4 and 12.");
       return;
     }
-    const queens = Array(n).fill(-1);
-    document.getElementById('status').textContent = 'Solving...';
+    solveBtn.disabled = true;
+    nInput.disabled = true;
+    statusEl.textContent = "Solving...";
+    let queens = Array(n).fill(-1);
     createBoard(n);
-    const result = await backtrack(0, n, queens);
-    if (result) {
-      document.getElementById('status').textContent = 'Solution found!';
+    let success = await backtrack(0, n, queens);
+    if(success) {
+      statusEl.textContent = "Solution found!";
     } else {
-      document.getElementById('status').textContent = 'No solution found.';
+      statusEl.textContent = "No solution exists for N = " + n;
     }
+    solveBtn.disabled = false;
+    nInput.disabled = false;
   }
 
   async function backtrack(row, n, queens) {
-    if (row === n) {
-      createBoard(n, queens.slice());
+    if(row === n) {
+      createBoard(n, queens);
       return true;
     }
-    for (let col = 0; col < n; col++) {
-      if (isSafe(row, col, queens)) {
+    for(let col=0; col<n; col++) {
+      if(isSafe(row, col, queens)) {
         queens[row] = col;
-        createBoard(n, queens.slice());
-        await sleep(300);
-        if (await backtrack(row + 1, n, queens)) return true;
+        createBoard(n, queens);
+        await sleep(400);
+        if(await backtrack(row + 1, n, queens)) return true;
         queens[row] = -1;
-        createBoard(n, queens.slice());
-        await sleep(100);
+        createBoard(n, queens);
+        await sleep(150);
       }
     }
     return false;
   }
 
   function isSafe(row, col, queens) {
-    for (let i = 0; i < row; i++) {
-      if (
-        queens[i] === col ||
-        Math.abs(queens[i] - col) === row - i
-      ) {
+    for(let r=0; r<row; r++) {
+      if(queens[r] === col || Math.abs(queens[r] - col) === row - r) {
         return false;
       }
     }
     return true;
   }
 
-  // Initially display 8x8 board empty
+  solveBtn.addEventListener('click', solveNQueens);
+
+  // Create initial empty board with default 8x8 size
   createBoard(8);
 </script>
 </body>
