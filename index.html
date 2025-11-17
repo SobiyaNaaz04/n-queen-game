@@ -1,87 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N Queen Visualizer</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 30px;}
-        .container { max-width: 400px; margin: auto; background: #fff; border-radius: 12px; box-shadow: 0 3px 16px #8884; padding: 24px;}
-        h1 { font-size: 2rem; margin-bottom: 16px; text-align: center;}
-        .board { display: grid; margin: 20px 0;}
-        .cell { width: 36px; height: 36px; border: 1px solid #aaa; display: flex; align-items: center; justify-content: center; font-size: 1.7rem;}
-        .cell.dark { background: #5e7ca3; color: #fff;}
-        .cell.light { background: #ddedff;}
-        .queen { color: #e63946; }
-        input[type=number] { width: 50px; }
-        button { background: #367ace; color: #fff; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-top: 10px;}
-        button:active { background: #225395;}
-        @media (max-width: 500px) {
-            .container { padding: 10px;}
-            .cell { width: 24px; height: 24px; font-size: 1.1rem;}
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>N-Queen Visualizer</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    margin: 0;
+    padding: 30px;
+  }
+  .container {
+    max-width: 400px;
+    margin: auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 3px 16px #8884;
+    padding: 24px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 16px;
+  }
+  .board {
+    display: grid;
+    margin: 20px 0;
+    gap: 0;
+    user-select: none;
+  }
+  .cell {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+  }
+  .cell.dark {
+    background: #5e7ca3;
+    color: #fff;
+  }
+  .cell.light {
+    background: #ddedff;
+  }
+  .queen {
+    color: #e63946;
+  }
+  input[type='number'] {
+    width: 60px;
+    font-size: 1rem;
+    padding: 3px;
+    margin-left: 8px;
+    text-align: center;
+  }
+  button {
+    background: #367ace;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 12px;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+  }
+  button:active {
+    background: #2a5694;
+  }
+  @media (max-width: 600px) {
+    .container {
+      padding: 12px;
+    }
+    .cell {
+      width: 26px;
+      height: 26px;
+      font-size: 1.3rem;
+    }
+    input[type='number'] {
+      width: 40px;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>N-Queen Visualizer</h1>
-        <label for="nValue">Enter N: </label>
-        <input type="number" id="nValue" value="8" min="4" max="12">
-        <button onclick="solveNQueens()">Solve</button>
-        <div id="board" class="board"></div>
-        <div id="status"></div>
-    </div>
-    <script>
-        function createBoard(n, queens=[]) {
-            const board = document.getElementById("board");
-            board.innerHTML = "";
-            board.style.gridTemplateColumns = repeat(${n}, 1fr);
-            for (let row = 0; row < n; row++) {
-                for (let col = 0; col < n; col++) {
-                    const cell = document.createElement("div");
-                    cell.className = "cell " + ((row + col) % 2 == 0 ? "light" : "dark");
-                    if (queens[row] === col) cell.innerHTML = "<span class='queen'>&#9819;</span>";
-                    board.appendChild(cell);
-                }
-            }
-        }
-        function sleep(ms) { return new Promise(res => setTimeout(res, ms)); }
+<div class="container">
+  <h1>N-Queen Visualizer</h1>
+  <label for="nValue">Enter N:</label>
+  <input type="number" id="nValue" value="8" min="4" max="12" />
+  <button onclick="solveNQueens()">Solve</button>
+  <div id="board" class="board"></div>
+  <div id="status"></div>
+</div>
+<script>
+  function createBoard(n, queens = []) {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    board.style.gridTemplateColumns = 'repeat(' + n + ', 1fr)';
+    for (let row = 0; row < n; row++) {
+      for (let col = 0; col < n; col++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell ' + ((row + col) % 2 === 0 ? 'light' : 'dark');
+        if (queens[row] === col) cell.innerHTML = '<span class="queen">&#9819;</span>';
+        board.appendChild(cell);
+      }
+    }
+  }
 
-        async function solveNQueens() {
-            let n = parseInt(document.getElementById("nValue").value);
-            let queens = Array(n).fill(-1);
-            document.getElementById("status").textContent = "Solving...";
-            createBoard(n);
-            let found = await backtrack(0, n, queens);
-            if (found) document.getElementById("status").textContent = "Solution found!";
-            else document.getElementById("status").textContent = "No solution found.";
-        }
-        async function backtrack(row, n, queens) {
-            if (row == n) {
-                createBoard(n, queens.slice());
-                return true;
-            }
-            for (let col = 0; col < n; col++) {
-                if (isSafe(row, col, queens)) {
-                    queens[row] = col;
-                    createBoard(n, queens.slice());
-                    await sleep(300); // Animation delay
-                    if (await backtrack(row + 1, n, queens)) return true;
-                    queens[row] = -1;
-                    createBoard(n, queens.slice());
-                    await sleep(100);
-                }
-            }
-            return false;
-        }
-        function isSafe(row, col, queens) {
-            for (let i = 0; i < row; i++) {
-                if (queens[i] === col || Math.abs(queens[i] - col) === row - i) return false;
-            }
-            return true;
-        }
-        // Initial board
-        createBoard(8);
-    </script>
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function solveNQueens() {
+    const n = parseInt(document.getElementById('nValue').value);
+    if (n < 4 || n > 12) {
+      alert('Please enter N between 4 and 12.');
+      return;
+    }
+    const queens = Array(n).fill(-1);
+    document.getElementById('status').textContent = 'Solving...';
+    createBoard(n);
+    const result = await backtrack(0, n, queens);
+    if (result) {
+      document.getElementById('status').textContent = 'Solution found!';
+    } else {
+      document.getElementById('status').textContent = 'No solution found.';
+    }
+  }
+
+  async function backtrack(row, n, queens) {
+    if (row === n) {
+      createBoard(n, queens.slice());
+      return true;
+    }
+    for (let col = 0; col < n; col++) {
+      if (isSafe(row, col, queens)) {
+        queens[row] = col;
+        createBoard(n, queens.slice());
+        await sleep(300);
+        if (await backtrack(row + 1, n, queens)) return true;
+        queens[row] = -1;
+        createBoard(n, queens.slice());
+        await sleep(100);
+      }
+    }
+    return false;
+  }
+
+  function isSafe(row, col, queens) {
+    for (let i = 0; i < row; i++) {
+      if (
+        queens[i] === col ||
+        Math.abs(queens[i] - col) === row - i
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Initially display 8x8 board empty
+  createBoard(8);
+</script>
 </body>
 </html>
